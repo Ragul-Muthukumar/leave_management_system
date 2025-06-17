@@ -7,12 +7,14 @@ use App\Models\Leaves;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
 
 
 
 class LeaveController extends Controller
 {
-    public function index(Request $request)
+    public function getLeaves(Request $request)
     {
         try {
             $query = Leaves::select('leaves.*', 'users.email', 'users.name')
@@ -67,7 +69,7 @@ class LeaveController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function storeLeaves(Request $request)
     {
         $request->validate([
             'start_date' => 'required|date',
@@ -115,6 +117,26 @@ class LeaveController extends Controller
 
             return response()->json([
                 'message' => 'Failed to apply leave',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUserLeaves(Request $request)
+    {
+        try {
+            $query = Leaves::select('leaves.*', 'users.email', 'users.name')
+                ->join('users', 'users.id', '=', 'leaves.user_id')
+                ->where('leaves.user_id', auth()->id())
+                ->orderBy('leaves.created_at', 'desc');
+
+            if ($request->has('search')) {
+                $query->where('users.email', 'like', '%' . $request->search . '%');
+            }
+            return response()->json($query->paginate(5));
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch leaves',
                 'error' => $e->getMessage()
             ], 500);
         }

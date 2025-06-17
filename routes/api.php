@@ -18,14 +18,16 @@ use app\Models\User;
 */
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/leaves', [LeaveController::class, 'index']);
-    Route::post('/leaves', [LeaveController::class, 'store']);
+    Route::get('/leaves', [LeaveController::class, 'getLeaves'])->middleware('is.manager')->name('getLeaves');
+    Route::post('/leaves', [LeaveController::class, 'storeLeaves'])->middleware('is.manager')->name('storeLeaves');
 
-    Route::patch('/leaves/{id}/approve', [LeaveController::class, 'approve']);
-    Route::patch('/leaves/{id}/reject', [LeaveController::class, 'reject']);
-    Route::get('/users', [AuthController::class, 'getUsers']);
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user/leaves', [LeaveController::class, 'getUserLeaves'])->name('getUserLeaves');
+
+    Route::patch('/leaves/{id}/approve', [LeaveController::class, 'approve'])->middleware('is.manager')->name('approve');
+    Route::patch('/leaves/{id}/reject', [LeaveController::class, 'reject'])->middleware('is.manager')->name('reject');
+    Route::get('/users', [AuthController::class, 'getUsers'])->middleware('is.manager')->name('getUsers');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/register', [AuthController::class, 'register'])->name('register');
